@@ -65,7 +65,10 @@ export const executeJob = async (job, workerId) => {
         .selectAll()
         .executeTakeFirst();
 
-      const nextRun = calculateNextRun(policy, job.current_retries);
+      // Fallback policy if none defined (0 retries)
+      const fallbackPolicy = { max_retries: 0, type: 'fixed', delay_ms: 0, multiplier: 1 };
+      
+      const nextRun = calculateNextRun(policy || fallbackPolicy, job.current_retries);
 
       if (nextRun) {
         // Schedule retry
