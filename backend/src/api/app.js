@@ -7,6 +7,7 @@ import { errorHandler } from './middlewares/errorHandler.js';
 import { NotFoundError } from '../shared/errors.js';
 import authRoutes from './routes/auth.routes.js';
 import orgRoutes from './routes/org.routes.js';
+import workerRoutes from './routes/worker.routes.js';
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use(cookieParser());
 // Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/organizations', orgRoutes);
+app.use('/api/v1/workers', workerRoutes);
 
 // Unhandled Routes
 app.all('*', (req, res, next) => {

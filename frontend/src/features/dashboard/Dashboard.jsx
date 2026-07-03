@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Folder, Plus, Server } from 'lucide-react';
 import { JobsPanel } from './JobsPanel';
+import { WorkerMonitor } from './WorkerMonitor';
 import { cn } from '../../utils/cn';
 
 export const Dashboard = () => {
@@ -183,6 +184,8 @@ export const Dashboard = () => {
           )}
         </div>
       </div>
+
+      <WorkerMonitor />
     </div>
   );
 };
