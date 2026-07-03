@@ -84,11 +84,20 @@ erDiagram
 | GET | `/api/v1/organizations/:id/projects/:id/queues` | Fetch all queues for a specific project | Yes |
 | POST | `/api/v1/organizations/:id/projects/:id/queues` | Create a new queue in a project | Yes |
 | DELETE | `/api/v1/organizations/:id/projects/:id/queues/:id`| Delete a queue and all its associated jobs | Yes |
+| POST | `.../queues/:queueId/pause` | Pause a queue | Yes |
+| POST | `.../queues/:queueId/resume` | Resume a queue | Yes |
+| GET | `.../queues/:queueId/stats` | Fetch queue job statistics | Yes |
+| GET | `.../queues/:queueId/dlq` | Fetch Dead Letter Queue jobs | Yes |
+| PUT | `.../queues/:queueId/retry-policy` | Update a queue's retry policy | Yes |
 | GET | `.../queues/:queueId/jobs` | Get paginated jobs for a specific queue | Yes |
 | POST | `.../queues/:queueId/jobs` | Submit a new job to a queue | Yes |
+| POST | `.../queues/:queueId/jobs/batch` | Submit a batch of jobs | Yes |
 | DELETE | `.../queues/:queueId/jobs/:jobId` | Delete a specific job | Yes |
+| POST | `.../queues/:queueId/jobs/:jobId/retry` | Manually retry a failed job | Yes |
 | DELETE | `.../queues/:queueId/jobs` | Clear/Purge all jobs in a specific queue | Yes |
+| POST | `.../queues/:queueId/scheduled-jobs` | Schedule a cron job | Yes |
 | GET | `/api/v1/workers` | Fetch the health telemetry of all active worker daemons | Yes |
+| POST | `/api/v1/workers/:workerId/heartbeat` | Send a worker heartbeat telemetry | No |
 
 ## 5. Design Decisions & Major Trade-offs
 

@@ -1,5 +1,6 @@
 import { db } from '../../db/client.js';
 import { AppError, UnauthorizedError, NotFoundError } from '../../shared/errors.js';
+import crypto from 'node:crypto';
 
 export const JobService = {
   async _verifyQueueAccess(queueId, userId) {
@@ -74,5 +75,43 @@ export const JobService = {
     await db.deleteFrom('jobs')
       .where('queue_id', '=', queueId)
       .execute();
+  },
+
+  async retryJob(queueId, jobId, userId) {
+    await this._verifyQueueAccess(queueId, userId);
+    const job = await db.selectFrom('jobs').where('id', '=', jobId).where('queue_id', '=', queueId).selectAll().executeTakeFirst();
+    if (!job) throw new NotFoundError('Job not found');
+    
+    return await db.updateTable('jobs')
+      .set({ status: 'queued', run_at: new Date(), current_retries: 0, updated_at: new Date() })
+      .where('id', '=', jobId)
+      .returningAll()
+      .executeTakeFirst();
+  },
+
+  async submitBatchJobs(queueId, userId, jobsDataArray) {
+    await this._verifyQueueAccess(queueId, userId);
+    if (!Array.isArray(jobsDataArray) || jobsDataArray.length === 0) {
+      throw new AppError('An array of jobs is required for batch submission', 400);
+    }
+    const batchId = crypto.randomUUID();
+    
+    const insertData = jobsDataArray.map(job => {
+      let executeAt = new Date();
+      if ((job.type === 'delayed' || job.type === 'scheduled') && job.run_at) {
+        executeAt = new Date(job.run_at);
+      }
+      return {
+        queue_id: queueId,
+        name: job.name,
+        payload: job.payload || {},
+        type: job.type || 'immediate',
+        status: 'queued',
+        run_at: executeAt,
+        batch_id: batchId
+      };
+    });
+
+    return await db.insertInto('jobs').values(insertData).returningAll().execute();
   }
 };

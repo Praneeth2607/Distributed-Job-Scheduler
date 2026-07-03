@@ -41,3 +41,23 @@ export const clearJobs = async (req, res, next) => {
     next(error);
   }
 };
+
+export const retryJob = async (req, res, next) => {
+  try {
+    const { queueId, jobId } = req.params;
+    const job = await JobService.retryJob(queueId, jobId, req.user.id);
+    res.status(200).json({ status: 'success', data: { job } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const submitBatchJobs = async (req, res, next) => {
+  try {
+    const { queueId } = req.params;
+    const jobs = await JobService.submitBatchJobs(queueId, req.user.id, req.body.jobs);
+    res.status(201).json({ status: 'success', data: { jobs } });
+  } catch (error) {
+    next(error);
+  }
+};

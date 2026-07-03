@@ -24,18 +24,14 @@ export class HeartbeatService {
 
   async beat() {
     try {
-      const cpu = os.loadavg()[0]; // 1-minute load average
-      const memory = process.memoryUsage().heapUsed / 1024 / 1024; // MB
+      const cpu = os.loadavg()[0]; 
+      const memory = process.memoryUsage().heapUsed / 1024 / 1024; 
 
-      await db
-        .updateTable('worker_heartbeats')
-        .set({
-          last_heartbeat: new Date(),
-          cpu_usage: cpu,
-          memory_usage: memory
-        })
-        .where('worker_id', '=', this.workerId)
-        .execute();
+      await fetch(`http://localhost:3000/api/v1/workers/${this.workerId}/heartbeat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cpu_usage: cpu, memory_usage: memory })
+      });
         
     } catch (err) {
       logger.error(`Heartbeat failed for worker ${this.workerId}: ${err.message}`);

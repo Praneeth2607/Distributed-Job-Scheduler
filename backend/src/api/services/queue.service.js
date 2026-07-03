@@ -67,5 +67,45 @@ export const QueueService = {
       .where('id', '=', queueId)
       .where('project_id', '=', projectId)
       .execute();
+  },
+
+  async pauseQueue(projectId, queueId, userId) {
+    await this._verifyProjectAccess(projectId, userId);
+    await db.updateTable('queues').set({ is_paused: true }).where('id', '=', queueId).where('project_id', '=', projectId).execute();
+  },
+
+  async resumeQueue(projectId, queueId, userId) {
+    await this._verifyProjectAccess(projectId, userId);
+    await db.updateTable('queues').set({ is_paused: false }).where('id', '=', queueId).where('project_id', '=', projectId).execute();
+  },
+
+  async getStats(projectId, queueId, userId) {
+    await this._verifyProjectAccess(projectId, userId);
+    const stats = await db.selectFrom('jobs')
+      .select(['status', db.fn.count('id').as('count')])
+      .where('queue_id', '=', queueId)
+      .groupBy('status')
+      .execute();
+      
+    return stats.reduce((acc, curr) => {
+      acc[curr.status] = Number(curr.count);
+      return acc;
+    }, { queued: 0, running: 0, completed: 0, failed: 0, retrying: 0 });
+  },
+
+  async getDLQ(projectId, queueId, userId) {
+    await this._verifyProjectAccess(projectId, userId);
+    return await db.selectFrom('dead_letter_queue').where('queue_id', '=', queueId).selectAll().execute();
+  },
+
+  async updateRetryPolicy(projectId, queueId, userId, policyData) {
+    await this._verifyProjectAccess(projectId, userId);
+    
+    const existing = await db.selectFrom('retry_policies').where('queue_id', '=', queueId).executeTakeFirst();
+    if (existing) {
+      return await db.updateTable('retry_policies').set(policyData).where('queue_id', '=', queueId).returningAll().executeTakeFirst();
+    } else {
+      return await db.insertInto('retry_policies').values({ queue_id: queueId, ...policyData }).returningAll().executeTakeFirst();
+    }
   }
 };

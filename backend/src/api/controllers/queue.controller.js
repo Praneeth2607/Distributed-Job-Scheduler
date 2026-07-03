@@ -29,3 +29,53 @@ export const deleteQueue = async (req, res, next) => {
     next(error);
   }
 };
+
+export const pauseQueue = async (req, res, next) => {
+  try {
+    const { projectId, queueId } = req.params;
+    await QueueService.pauseQueue(projectId, queueId, req.user.id);
+    res.status(200).json({ status: 'success', message: 'Queue paused' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resumeQueue = async (req, res, next) => {
+  try {
+    const { projectId, queueId } = req.params;
+    await QueueService.resumeQueue(projectId, queueId, req.user.id);
+    res.status(200).json({ status: 'success', message: 'Queue resumed' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getStats = async (req, res, next) => {
+  try {
+    const { projectId, queueId } = req.params;
+    const stats = await QueueService.getStats(projectId, queueId, req.user.id);
+    res.status(200).json({ status: 'success', data: { stats } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getDLQ = async (req, res, next) => {
+  try {
+    const { projectId, queueId } = req.params;
+    const dlq = await QueueService.getDLQ(projectId, queueId, req.user.id);
+    res.status(200).json({ status: 'success', data: { dlq } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateRetryPolicy = async (req, res, next) => {
+  try {
+    const { projectId, queueId } = req.params;
+    const policy = await QueueService.updateRetryPolicy(projectId, queueId, req.user.id, req.body);
+    res.status(200).json({ status: 'success', data: { policy } });
+  } catch (error) {
+    next(error);
+  }
+};
