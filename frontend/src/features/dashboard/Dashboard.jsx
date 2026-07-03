@@ -4,7 +4,7 @@ import { api } from '../../services/api';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { Folder, Plus, Server, Trash2 } from 'lucide-react';
+import { Folder, Plus, Server, Trash2, Pause, Play } from 'lucide-react';
 import { JobsPanel } from './JobsPanel';
 import { WorkerMonitor } from './WorkerMonitor';
 import { cn } from '../../utils/cn';
@@ -84,6 +84,16 @@ export const Dashboard = () => {
       queryClient.invalidateQueries(['queues']); 
       setSelectedQueueId(null);
     }
+  });
+
+  const pauseQueue = useMutation({
+    mutationFn: async (queueId) => api.post(`/organizations/${selectedOrg.id}/projects/${selectedProject.id}/queues/${queueId}/pause`),
+    onSuccess: () => { queryClient.invalidateQueries(['queues']); }
+  });
+
+  const resumeQueue = useMutation({
+    mutationFn: async (queueId) => api.post(`/organizations/${selectedOrg.id}/projects/${selectedProject.id}/queues/${queueId}/resume`),
+    onSuccess: () => { queryClient.invalidateQueries(['queues']); }
   });
 
   // UI States
@@ -198,22 +208,46 @@ export const Dashboard = () => {
                       )}
                     >
                       <div>
-                        <div className="font-medium text-charcoal">{q.name}</div>
+                        <div className="font-medium text-charcoal flex items-center gap-2">
+                          {q.name}
+                          {q.is_paused && <span className="px-1.5 py-0.5 rounded text-[10px] bg-orange-100 text-orange-700 font-bold tracking-wider uppercase">Paused</span>}
+                        </div>
                         <div className="text-xs text-gray-500">Max {q.max_concurrency}</div>
                       </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if(confirm('Are you sure you want to delete this queue and all its jobs?')) {
-                            deleteQueue.mutate(q.id);
-                          }
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {q.is_paused ? (
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-green-600 hover:bg-green-50"
+                            onClick={(e) => { e.stopPropagation(); resumeQueue.mutate(q.id); }}
+                          >
+                            <Play className="h-4 w-4" />
+                          </Button>
+                        ) : (
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-orange-500 hover:bg-orange-50"
+                            onClick={(e) => { e.stopPropagation(); pauseQueue.mutate(q.id); }}
+                          >
+                            <Pause className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-red-500 hover:bg-red-50"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if(confirm('Are you sure you want to delete this queue and all its jobs?')) {
+                              deleteQueue.mutate(q.id);
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))
                 )}
