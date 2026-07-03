@@ -17,6 +17,32 @@ The system is decoupled into three independent layers that communicate entirely 
 3. **The Spawner (Cron Engine)**
    A dedicated sub-process that tracks scheduled and recurring jobs (e.g., "Run this report at midnight"). When it's time for a scheduled job to execute, the spawner automatically drops it into the active queue for a worker to pick up.
 
+## 📁 Project Structure
+
+```text
+Distributed-Job-Scheduler/
+├── backend/                  # Node.js Express API & Worker Engine
+│   ├── src/
+│   │   ├── api/              # Express Server, Controllers, Routes, Middlewares
+│   │   ├── db/               # PostgreSQL Connection, Schema, Migrations, Seeds
+│   │   ├── shared/           # Error Handling & Logging utilities
+│   │   └── worker/           # Background Daemon, Poller, Heartbeat, Spawner
+│   └── package.json
+├── frontend/                 # React + Vite Dashboard
+│   ├── src/
+│   │   ├── components/       # Reusable UI components (Buttons, Inputs, Cards)
+│   │   ├── features/         # Feature-specific logic (Dashboard, Auth, JobsPanel)
+│   │   ├── layout/           # Dashboard Layout Shell
+│   │   ├── services/         # Axios API Client setup
+│   │   ├── utils/            # Utility functions (Tailwind merge)
+│   │   ├── App.jsx           # Main App Router
+│   │   └── index.css         # Tailwind v4 Global CSS
+│   ├── package.json
+│   ├── vite.config.js
+│   └── postcss.config.js
+└── README.md
+```
+
 ## 🛠️ Technology Stack
 
 **Frontend:**
