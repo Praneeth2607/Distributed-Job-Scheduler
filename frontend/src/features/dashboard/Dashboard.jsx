@@ -5,12 +5,15 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Ca
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Folder, Plus, Server } from 'lucide-react';
+import { JobsPanel } from './JobsPanel';
+import { cn } from '../../utils/cn';
 
 export const Dashboard = () => {
   const queryClient = useQueryClient();
   const [newOrgName, setNewOrgName] = useState('');
   const [newProjectName, setNewProjectName] = useState('');
   const [newQueueName, setNewQueueName] = useState('');
+  const [selectedQueueId, setSelectedQueueId] = useState(null);
   
   // 1. Fetch Orgs
   const { data: orgs = [] } = useQuery({
@@ -43,6 +46,12 @@ export const Dashboard = () => {
       return res.data.data.queues;
     },
     enabled: !!selectedProject,
+    onSuccess: (data) => {
+      // Auto select first queue if none selected
+      if (data.length > 0 && !selectedQueueId) {
+        setSelectedQueueId(data[0].id);
+      }
+    }
   });
 
   // Mutations
@@ -131,8 +140,17 @@ export const Dashboard = () => {
                   <p className="text-sm text-gray-500">No queues created yet.</p>
                 ) : (
                   queues.map(q => (
-                    <div key={q.id} className="p-3 border border-border rounded-md bg-ivory flex justify-between items-center cursor-pointer hover:border-gold-400 transition-colors">
-                      <div className="font-medium">{q.name}</div>
+                    <div 
+                      key={q.id} 
+                      onClick={() => setSelectedQueueId(q.id)}
+                      className={cn(
+                        "p-3 border rounded-md flex justify-between items-center cursor-pointer transition-colors",
+                        selectedQueueId === q.id 
+                          ? "bg-gold-50 border-gold-400" 
+                          : "bg-ivory border-border hover:border-gold-400"
+                      )}
+                    >
+                      <div className="font-medium text-charcoal">{q.name}</div>
                       <div className="text-xs text-gray-500">Max {q.max_concurrency}</div>
                     </div>
                   ))
@@ -154,11 +172,15 @@ export const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Placeholder for Jobs Area */}
+        {/* Jobs Area */}
         <div className="md:col-span-2 space-y-4">
-          <Card className="min-h-[400px] flex items-center justify-center bg-ivory border-dashed">
-            <p className="text-gray-500 font-medium">Select a queue to view jobs (Coming in 4.4)</p>
-          </Card>
+          {selectedQueueId ? (
+            <JobsPanel queueId={selectedQueueId} />
+          ) : (
+            <Card className="min-h-[400px] flex items-center justify-center bg-ivory border-dashed border-border border-2">
+              <p className="text-gray-500 font-medium">Select a queue to view jobs</p>
+            </Card>
+          )}
         </div>
       </div>
     </div>
