@@ -2,11 +2,13 @@ import { db } from '../db/client.js';
 import { logger } from '../shared/logger.js';
 import { HeartbeatService } from './core/heartbeat.js';
 import { Poller } from './core/poller.js';
+import { Spawner } from './scheduler/spawner.js';
 import os from 'os';
 
 let currentWorkerId = null;
 let heartbeatService = null;
 let poller = null;
+let spawner = null;
 
 async function startup() {
   logger.info('Starting Worker Daemon...');
@@ -33,12 +35,19 @@ async function startup() {
   poller = new Poller(currentWorkerId, 2000);
   poller.start();
   
-  logger.info('Worker is successfully polling for jobs.');
+  // 4. Start Spawner (Cron Engine)
+  // In a large production setup, the spawner could be a separate service,
+  // but it's safe to run it alongside workers because of SKIP LOCKED.
+  spawner = new Spawner(10000);
+  spawner.start();
+  
+  logger.info('Worker is successfully polling for jobs and spawning scheduled jobs.');
 }
 
 async function shutdown() {
   logger.info('Graceful shutdown initiated...');
   
+  if (spawner) spawner.stop();
   if (poller) poller.stop();
   if (heartbeatService) heartbeatService.stop();
 
