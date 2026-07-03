@@ -44,3 +44,7 @@ export const logout = (req, res) => {
   });
   res.status(200).json({ status: 'success' });
 };
+
+export const getMe = (req, res) => {
+  res.status(200).json({ status: 'success', data: { user: req.user } });
+};
