@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './features/auth/AuthContext';
 import { Login } from './features/auth/Login';
 import { DashboardLayout } from './layout/DashboardLayout';
+import { Dashboard } from './features/dashboard/Dashboard';
 
 const App = () => {
   return (
@@ -13,7 +14,7 @@ const App = () => {
           
           {/* Protected Dashboard Routes */}
           <Route path="/" element={<DashboardLayout />}>
-            <Route index element={<div>Dashboard Home Placeholder</div>} />
+            <Route index element={<Dashboard />} />
             {/* Future routes: /projects/:id, /queues/:id etc. */}
           </Route>
           
