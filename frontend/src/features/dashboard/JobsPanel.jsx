@@ -35,40 +35,38 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-export const JobsPanel = ({ queueId }) => {
+export const JobsPanel = ({ queueId, orgId, projectId }) => {
   const queryClient = useQueryClient();
-  const [newJobName, setNewJobName] = useState('send_email');
+  const [newJobName, setNewJobName] = useState('');
 
-  // Poll jobs every 2 seconds
   const { data: jobs = [] } = useQuery({
     queryKey: ['jobs', queueId],
     queryFn: async () => {
-      const res = await api.get(`/organizations/0/projects/0/queues/${queueId}/jobs`);
+      const res = await api.get(`/organizations/${orgId}/projects/${projectId}/queues/${queueId}/jobs`);
       return res.data.data.jobs;
     },
-    refetchInterval: 2000, 
-    enabled: !!queueId,
+    refetchInterval: 3000, // Poll every 3s to watch job progress
+    enabled: !!queueId
   });
 
   const submitJob = useMutation({
-    // We only need queueId in the URL path for our job routes as per project.routes.js nested mount
-    mutationFn: async (name) => api.post(`/organizations/0/projects/0/queues/${queueId}/jobs`, { 
+    mutationFn: async (name) => api.post(`/organizations/${orgId}/projects/${projectId}/queues/${queueId}/jobs`, {
       name,
-      type: 'immediate',
-      payload: { to: 'test@example.com', subject: 'Hello' }
+      payload: { test: true }
     }),
     onSuccess: () => { 
       queryClient.invalidateQueries(['jobs', queueId]); 
+      setNewJobName('');
     }
   });
 
   const deleteJob = useMutation({
-    mutationFn: async (jobId) => api.delete(`/organizations/0/projects/0/queues/${queueId}/jobs/${jobId}`),
+    mutationFn: async (jobId) => api.delete(`/organizations/${orgId}/projects/${projectId}/queues/${queueId}/jobs/${jobId}`),
     onSuccess: () => queryClient.invalidateQueries(['jobs', queueId])
   });
 
   const clearJobs = useMutation({
-    mutationFn: async () => api.delete(`/organizations/0/projects/0/queues/${queueId}/jobs`),
+    mutationFn: async () => api.delete(`/organizations/${orgId}/projects/${projectId}/queues/${queueId}/jobs`),
     onSuccess: () => queryClient.invalidateQueries(['jobs', queueId])
   });
 

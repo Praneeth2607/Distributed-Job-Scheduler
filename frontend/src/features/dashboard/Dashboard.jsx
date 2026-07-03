@@ -16,6 +16,9 @@ export const Dashboard = () => {
   const [newQueueName, setNewQueueName] = useState('');
   const [selectedQueueId, setSelectedQueueId] = useState(null);
   
+  const [selectedOrgId, setSelectedOrgId] = useState(null);
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
+  
   // 1. Fetch Orgs
   const { data: orgs = [] } = useQuery({
     queryKey: ['organizations'],
@@ -25,7 +28,7 @@ export const Dashboard = () => {
     },
   });
 
-  const selectedOrg = orgs[0]; // For simplicity, auto-select first org
+  const selectedOrg = selectedOrgId ? orgs.find(o => o.id === selectedOrgId) : orgs[0];
 
   // 2. Fetch Projects if org exists
   const { data: projects = [] } = useQuery({
@@ -37,7 +40,7 @@ export const Dashboard = () => {
     enabled: !!selectedOrg,
   });
 
-  const selectedProject = projects[0];
+  const selectedProject = selectedProjectId ? projects.find(p => p.id === selectedProjectId) : projects[0];
 
   // 3. Fetch Queues if project exists
   const { data: queues = [] } = useQuery({
@@ -126,10 +129,45 @@ export const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-border pb-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">{selectedProject.name} Dashboard</h2>
+          <h2 className="text-2xl font-bold tracking-tight">{selectedProject?.name || 'Loading...'} Dashboard</h2>
           <p className="text-sm text-gray-500">Manage queues and jobs for this project.</p>
+        </div>
+        
+        <div className="flex items-center gap-4 bg-white p-2 rounded-md border border-border shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Org:</span>
+            <select 
+              className="text-sm border-none bg-transparent font-medium text-charcoal focus:ring-0 cursor-pointer"
+              value={selectedOrg?.id || ''}
+              onChange={(e) => {
+                setSelectedOrgId(e.target.value);
+                setSelectedProjectId(null); // Reset project when org changes
+                setSelectedQueueId(null); // Reset queue when org changes
+              }}
+            >
+              {orgs.map(org => (
+                <option key={org.id} value={org.id}>{org.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="w-px h-6 bg-border"></div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Project:</span>
+            <select 
+              className="text-sm border-none bg-transparent font-medium text-charcoal focus:ring-0 cursor-pointer"
+              value={selectedProject?.id || ''}
+              onChange={(e) => {
+                setSelectedProjectId(e.target.value);
+                setSelectedQueueId(null); // Reset queue when project changes
+              }}
+            >
+              {projects.map(proj => (
+                <option key={proj.id} value={proj.id}>{proj.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -207,7 +245,11 @@ export const Dashboard = () => {
         {/* Jobs Area */}
         <div className="md:col-span-2 space-y-4">
           {selectedQueueId ? (
-            <JobsPanel queueId={selectedQueueId} />
+            <JobsPanel 
+              queueId={selectedQueueId} 
+              orgId={selectedOrg.id}
+              projectId={selectedProject.id}
+            />
           ) : (
             <Card className="min-h-[400px] flex items-center justify-center bg-ivory border-dashed border-border border-2">
               <p className="text-gray-500 font-medium">Select a queue to view jobs</p>
