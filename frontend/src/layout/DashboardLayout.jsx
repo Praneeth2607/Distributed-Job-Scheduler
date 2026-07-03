@@ -21,8 +21,9 @@ export const DashboardLayout = () => {
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm text-gray-600 font-medium">{user?.email}</span>
-          <Button variant="ghost" size="icon" onClick={() => logout()}>
-            <LogOut className="h-5 w-5 text-gray-500" />
+          <Button variant="ghost" size="sm" onClick={() => logout()} className="flex items-center gap-2">
+            <LogOut className="h-4 w-4 text-gray-500" />
+            <span>Logout</span>
           </Button>
         </div>
       </header>

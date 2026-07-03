@@ -19,3 +19,13 @@ export const getQueues = async (req, res, next) => {
     next(error);
   }
 };
+
+export const deleteQueue = async (req, res, next) => {
+  try {
+    const { projectId, queueId } = req.params;
+    await QueueService.deleteQueue(projectId, queueId, req.user.id);
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+};

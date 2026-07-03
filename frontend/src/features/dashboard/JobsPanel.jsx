@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Ca
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { format } from 'date-fns';
-import { Play, Clock, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
+import { Play, Clock, CheckCircle2, XCircle, RefreshCw, Trash2 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
 const StatusBadge = ({ status }) => {
@@ -62,6 +62,16 @@ export const JobsPanel = ({ queueId }) => {
     }
   });
 
+  const deleteJob = useMutation({
+    mutationFn: async (jobId) => api.delete(`/organizations/0/projects/0/queues/${queueId}/jobs/${jobId}`),
+    onSuccess: () => queryClient.invalidateQueries(['jobs', queueId])
+  });
+
+  const clearJobs = useMutation({
+    mutationFn: async () => api.delete(`/organizations/0/projects/0/queues/${queueId}/jobs`),
+    onSuccess: () => queryClient.invalidateQueries(['jobs', queueId])
+  });
+
   return (
     <Card className="min-h-[500px]">
       <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
@@ -78,6 +88,11 @@ export const JobsPanel = ({ queueId }) => {
           </select>
           <Button size="sm" onClick={() => submitJob.mutate(newJobName)}>
             Submit Job
+          </Button>
+          <Button size="sm" variant="danger" onClick={() => {
+            if(confirm('Clear all jobs in this queue?')) clearJobs.mutate();
+          }}>
+            Clear Queue
           </Button>
         </div>
       </CardHeader>
@@ -97,11 +112,12 @@ export const JobsPanel = ({ queueId }) => {
                   <th className="px-4 py-3 font-medium">Status</th>
                   <th className="px-4 py-3 font-medium">Retries</th>
                   <th className="px-4 py-3 font-medium">Created At</th>
+                  <th className="px-4 py-3 font-medium"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border font-mono text-xs">
                 {jobs.map(job => (
-                  <tr key={job.id} className="hover:bg-gray-50">
+                  <tr key={job.id} className="hover:bg-gray-50 group">
                     <td className="px-4 py-3 text-gray-400">...{job.id.slice(-6)}</td>
                     <td className="px-4 py-3 font-sans font-medium text-charcoal">{job.name}</td>
                     <td className="px-4 py-3">
@@ -110,6 +126,16 @@ export const JobsPanel = ({ queueId }) => {
                     <td className="px-4 py-3 text-gray-500">{job.current_retries}</td>
                     <td className="px-4 py-3 text-gray-500">
                       {format(new Date(job.created_at), 'HH:mm:ss.SSS')}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => deleteJob.mutate(job.id)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </td>
                   </tr>
                 ))}

@@ -21,3 +21,23 @@ export const getJobs = async (req, res, next) => {
     next(error);
   }
 };
+
+export const deleteJob = async (req, res, next) => {
+  try {
+    const { queueId, jobId } = req.params;
+    await JobService.deleteJob(queueId, jobId, req.user.id);
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const clearJobs = async (req, res, next) => {
+  try {
+    const { queueId } = req.params;
+    await JobService.clearJobs(queueId, req.user.id);
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+};

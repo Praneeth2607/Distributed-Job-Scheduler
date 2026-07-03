@@ -59,5 +59,13 @@ export const QueueService = {
   async getProjectQueues(projectId, userId) {
     await this._verifyProjectAccess(projectId, userId);
     return await db.selectFrom('queues').where('project_id', '=', projectId).selectAll().execute();
+  },
+
+  async deleteQueue(projectId, queueId, userId) {
+    await this._verifyProjectAccess(projectId, userId);
+    await db.deleteFrom('queues')
+      .where('id', '=', queueId)
+      .where('project_id', '=', projectId)
+      .execute();
   }
 };

@@ -59,5 +59,20 @@ export const JobService = {
       .offset(offset)
       .selectAll()
       .execute();
+  },
+
+  async deleteJob(queueId, jobId, userId) {
+    await this._verifyQueueAccess(queueId, userId);
+    await db.deleteFrom('jobs')
+      .where('id', '=', jobId)
+      .where('queue_id', '=', queueId)
+      .execute();
+  },
+
+  async clearJobs(queueId, userId) {
+    await this._verifyQueueAccess(queueId, userId);
+    await db.deleteFrom('jobs')
+      .where('queue_id', '=', queueId)
+      .execute();
   }
 };

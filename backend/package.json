@@ -5,6 +5,7 @@
   "main": "src/api/server.js",
   "type": "module",
   "scripts": {
+    "dev": "node src/api/server.js",
     "start:api": "node src/api/server.js",
     "start:worker": "node src/worker/daemon.js",
     "migrate:up": "node src/db/run-migrations.js up",

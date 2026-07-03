@@ -1,8 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@theme {
+  --color-ivory: #FDFDFB;
+  --color-charcoal: #1F1F1F;
+  --color-gold-400: #D4AF37;
+  --color-gold-500: #C5A028;
+  --color-surface: #F4F4F0;
+  --color-border: #E8E8E3;
+  --font-sans: 'Outfit', sans-serif;
+  --font-mono: '"Fira Code"', monospace;
+}
 
 @layer base {
   body {

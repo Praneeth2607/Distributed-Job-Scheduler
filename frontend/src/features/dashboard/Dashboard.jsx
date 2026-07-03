@@ -4,7 +4,7 @@ import { api } from '../../services/api';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { Folder, Plus, Server } from 'lucide-react';
+import { Folder, Plus, Server, Trash2 } from 'lucide-react';
 import { JobsPanel } from './JobsPanel';
 import { WorkerMonitor } from './WorkerMonitor';
 import { cn } from '../../utils/cn';
@@ -73,6 +73,14 @@ export const Dashboard = () => {
       max_concurrency: 10
     }),
     onSuccess: () => { queryClient.invalidateQueries(['queues']); setNewQueueName(''); }
+  });
+
+  const deleteQueue = useMutation({
+    mutationFn: async (queueId) => api.delete(`/organizations/${selectedOrg.id}/projects/${selectedProject.id}/queues/${queueId}`),
+    onSuccess: () => { 
+      queryClient.invalidateQueries(['queues']); 
+      setSelectedQueueId(null);
+    }
   });
 
   // UI States
@@ -145,14 +153,29 @@ export const Dashboard = () => {
                       key={q.id} 
                       onClick={() => setSelectedQueueId(q.id)}
                       className={cn(
-                        "p-3 border rounded-md flex justify-between items-center cursor-pointer transition-colors",
+                        "p-3 border rounded-md flex justify-between items-center cursor-pointer transition-colors group",
                         selectedQueueId === q.id 
                           ? "bg-gold-50 border-gold-400" 
                           : "bg-ivory border-border hover:border-gold-400"
                       )}
                     >
-                      <div className="font-medium text-charcoal">{q.name}</div>
-                      <div className="text-xs text-gray-500">Max {q.max_concurrency}</div>
+                      <div>
+                        <div className="font-medium text-charcoal">{q.name}</div>
+                        <div className="text-xs text-gray-500">Max {q.max_concurrency}</div>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if(confirm('Are you sure you want to delete this queue and all its jobs?')) {
+                            deleteQueue.mutate(q.id);
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   ))
                 )}
@@ -164,7 +187,15 @@ export const Dashboard = () => {
                     onChange={e => setNewQueueName(e.target.value)}
                     className="h-8 text-sm"
                   />
-                  <Button size="sm" onClick={() => createQueue.mutate(newQueueName)}>
+                  <Button 
+                    size="sm" 
+                    onClick={() => {
+                      if (newQueueName.trim()) {
+                        createQueue.mutate(newQueueName.trim());
+                      }
+                    }}
+                    disabled={!newQueueName.trim()}
+                  >
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>

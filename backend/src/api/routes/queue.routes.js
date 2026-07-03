@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createQueue, getQueues } from '../controllers/queue.controller.js';
+import { createQueue, getQueues, deleteQueue } from '../controllers/queue.controller.js';
 import { validate } from '../middlewares/validate.js';
 import { createQueueSchema } from '../validators/queue.schema.js';
 import { protect } from '../middlewares/auth.js';
@@ -12,6 +12,7 @@ router.use(protect);
 
 router.post('/', validate(createQueueSchema), createQueue);
 router.get('/', getQueues);
+router.delete('/:queueId', deleteQueue);
 
 // Mount job routes
 router.use('/:queueId/jobs', jobRoutes);
